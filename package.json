@@ -4,7 +4,11 @@
   "description": "Heygen Software Engineer Application, take home assignment",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
+  },
+  "jest": {
+  "maxWorkers": 1,
+  "testTimeout": 200000
   },
   "keywords": [],
   "author": "",
@@ -12,5 +16,9 @@
   "dependencies": {
     "dotenv": "^16.4.7",
     "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "test": "^3.3.0"
   }
 }
