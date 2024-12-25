@@ -29,13 +29,15 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
+app.use(express.json());
 
 const PORT = process.env.PORT || 3000;              // sever port
 const MIN_DELAY = process.env.MIN_DELAY || 5000;    // minimum delay time of video translation
-const MAX_DELAY = process.env.MAX_DELAY || 15000;   // maximum delay time of video translation
-const ERROR_RATE = process.env.ERROR_RATE || 0.3;   // error rate to randomly assign 'error' status
+const MAX_DELAY = process.env.MAX_DELAY || 50000;   // maximum delay time of video translation
+const ERROR_RATE = process.env.ERROR_RATE || 0.03;   // error rate to randomly assign 'error' status
 
 const videos ={};
+
 
 /**
  * POST /create
@@ -55,11 +57,18 @@ const videos ={};
  * - Ensures that the provided videoID is unique.
  */
 app.post('/create', (req, res) => {
-    const videoID = req.body.videoID
-    const delay = Math.floor(Math.random() * (MAX_DELAY - MIN_DELAY + 1) + MIN_DELAY);      // Generate a random delay
-    const status = Math.random() > ERROR_RATE ? 'pending' : 'error';                        // Randomly assign 'error' status based on error rate
+    console.log('Received POST /create request');
+    console.log('Request body:', req.body);
 
-    // Ensuring given videoID is unique
+    const videoID = req.body?.videoID;
+    if (!videoID) {
+        return res.status(400).json({ error: 'videoID is required in the request body' });
+    }
+
+    const delay = Math.floor(Math.random() * (MAX_DELAY - MIN_DELAY + 1) + MIN_DELAY); // Generate a random delay
+    const status = Math.random() > ERROR_RATE ? 'pending' : 'error'; // Randomly assign 'error' status
+
+    // Ensure the videoID is unique
     if (videos[videoID]) {
         return res.status(400).json({ error: `VideoID '${videoID}' already exists. Please choose a different ID.` });
     }
@@ -70,8 +79,9 @@ app.post('/create', (req, res) => {
         status: status,
     };
 
-    // Log details
+    // Log job details
     console.log(`Video ID: ${videoID}, Delay: ${delay} ms, Initial Status: ${status}`);
+
     res.json({
         videoID: videoID,
         message: `Video translation added. Check status using /status?videoID=${videoID}`,
@@ -113,7 +123,5 @@ app.get('/status', (req, res) => {
     res.json({ result: video.status });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`Simulating delays between ${MIN_DELAY} ms and ${MAX_DELAY} ms`);
-});
+
+module.exports = app;
